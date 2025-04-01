@@ -1,0 +1,10 @@
+services:
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./data:/site/data
+      - ./storage:/site/storage
+    environment:
+      - DATABASE_URL=sqlite3:/site/data/series.db
