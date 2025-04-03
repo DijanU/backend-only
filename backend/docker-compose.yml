@@ -5,6 +5,6 @@ services:
       - "8080:8080"
     volumes:
       - ./data:/site/data
-      - ./storage:/site/storage
+      - ./database:/site/database
     environment:
-      - DATABASE_URL=sqlite3:/site/data/series.db
+      - DATABASE_URL=sqlite3:/site/database/series.db 

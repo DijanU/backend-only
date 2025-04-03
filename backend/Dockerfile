@@ -1,20 +1,22 @@
 FROM golang:1.24.1-alpine
 
-# Instalar dependencias (SQLite y compiladores)
+# Instalar dependencias (SQLite, compiladores y el driver)
 RUN apk add --no-cache gcc musl-dev sqlite sqlite-dev
 
-# Directorio de trabajo
+# Configuración específica para el driver SQLite
+ENV CGO_ENABLED=1
+
 WORKDIR /site
 
-# Copiar primero los archivos de dependencias
+# Copiar módulos primero para cachear dependencias
 COPY go.mod go.sum ./
 RUN go mod download
 
-# Copiar el resto del código
+# Copiar el resto
 COPY . .
 
-# Compilar
-RUN go build -o main .
+# Compilar (¡con CGO habilitado!)
+RUN go build -ldflags="-s -w" -o main .
 
 EXPOSE 8080
 CMD ["./main"]

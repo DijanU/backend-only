@@ -3,6 +3,6 @@ module github.com/DijanU/backend-only
 go 1.24.1
 
 require (
-	github.com/joho/godotenv v1.5.1 // indirect
-	github.com/mattn/go-sqlite3 v1.14.24 // indirect
+	github.com/go-chi/chi/v5 v5.2.1
+	github.com/mattn/go-sqlite3 v1.14.27
 )
