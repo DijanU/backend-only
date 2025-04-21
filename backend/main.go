@@ -39,8 +39,8 @@ type Series struct {
 	Ranking     int    `json:"ranking"`
 	Title       string `json:"title"`
 	Status      string `json:"status,omitempty"`
-	LwsEpisodes int    `json:"lwespisodes"` // Cambiado a LwsEpisodes
-	TEpisodes   int    `json:"tepisodes"`
+	LwsEpisodes int    `json:"lastEpisodeWatched"` // Cambiado a LwsEpisodes
+	TEpisodes   int    `json:"totalEpisodes"`
 }
 
 func getallseries(w http.ResponseWriter, r *http.Request) {
@@ -184,6 +184,33 @@ func seriesdownvote(w http.ResponseWriter, r *http.Request) {
 	// Responder con un código 204 (sin contenido)
 	w.WriteHeader(http.StatusNoContent)
 }
+func episodeplusone(w http.ResponseWriter, r *http.Request) {
+	idStr := chi.URLParam(r, "id")
+
+	// Convertir el ID de string a entero
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, "ID inválido", http.StatusBadRequest)
+		return
+	}
+
+	// Actualizar el ranking, sumando 1 al valor actual
+	upvoted, err := db.Exec("UPDATE series SET lws_episodes = lws_episodes + 1 WHERE id = ?", id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Verificar cuántas filas fueron afectadas
+	rowsAffected, _ := upvoted.RowsAffected()
+	if rowsAffected == 0 {
+		http.Error(w, "Serie no encontrada", http.StatusNotFound)
+		return
+	}
+
+	// Responder con un código 204 (sin contenido)
+	w.WriteHeader(http.StatusNoContent)
+}
 
 func main() {
 	// Inicializar la base de datos
@@ -222,7 +249,8 @@ func main() {
 
 		r.Patch("/{id}/upvote", seriesupvote)
 		r.Patch("/{id}/downvote", seriesdownvote)
-		//r.Patch("/{id}/episode", )
+		r.Patch("/{id}/episode", episodeplusone)
+		//r.Patch("/{id}/status", statuschange)
 	})
 
 	// Mensaje de inicio
