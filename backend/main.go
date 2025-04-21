@@ -65,7 +65,32 @@ func getallseries(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(series)
 }
 
-func getseriesbyid() {}
+func getseriesbyid(w http.ResponseWriter, r *http.Request) {
+
+	idStr := chi.URLParam(r, "id")
+
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, "ID inválido", http.StatusBadRequest)
+		return
+	}
+
+	var s Series
+	err = db.QueryRow("SELECT id, ranking, title, status, lws_episodes, t_episodes FROM series WHERE id = ?", id).
+		Scan(&s.ID, &s.Ranking, &s.Title, &s.Status, &s.LwsEpisodes, &s.TEpisodes)
+
+	if err == sql.ErrNoRows {
+		http.Error(w, "Serie no encontrada", http.StatusNotFound)
+		return
+	} else if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(s)
+
+}
 
 func updateseiers() {}
 
@@ -243,7 +268,7 @@ func main() {
 	router.Route("/api/series", func(r chi.Router) {
 		r.Get("/", getallseries)
 		r.Post("/", createSeries)
-		//r.Get("/{id}", getseriesbyid)
+		r.Get("/{id}", getseriesbyid)
 		//r.Put("/{id}", updateseiers)
 		r.Delete("/{id}", deleteseries)
 
