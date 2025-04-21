@@ -92,7 +92,40 @@ func getseriesbyid(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func updateseiers() {}
+func updateseiers(w http.ResponseWriter, r *http.Request) {
+
+	idStr := chi.URLParam(r, "id")
+
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, "ID inválido", http.StatusBadRequest)
+		return
+	}
+	var s Series
+	err = json.NewDecoder(r.Body).Decode(&s)
+	if err != nil {
+		http.Error(w, "JSON inválido", http.StatusBadRequest)
+		return
+	}
+
+	s.ID = id
+
+	updated, err := db.Exec("UPDATE series SET ranking = ?, title = ?, status = ?, lws_episodes = ?, t_episodes = ?  WHERE id = ?", s.Ranking, s.Title, s.Status, s.LwsEpisodes, s.TEpisodes, s.ID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Verificar cuántas filas fueron afectadas
+	rowsAffected, _ := updated.RowsAffected()
+	if rowsAffected == 0 {
+		http.Error(w, "Serie no encontrada", http.StatusNotFound)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(s)
+
+}
 
 func createSeries(w http.ResponseWriter, r *http.Request) {
 	var newSeries Series
@@ -269,7 +302,7 @@ func main() {
 		r.Get("/", getallseries)
 		r.Post("/", createSeries)
 		r.Get("/{id}", getseriesbyid)
-		//r.Put("/{id}", updateseiers)
+		r.Put("/{id}", updateseiers)
 		r.Delete("/{id}", deleteseries)
 
 		r.Patch("/{id}/upvote", seriesupvote)
