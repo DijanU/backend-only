@@ -270,6 +270,44 @@ func episodeplusone(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
+func statuschange(w http.ResponseWriter, r *http.Request) {
+	idStr := chi.URLParam(r, "id")
+
+	// Convertir el ID de string a entero
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, "ID inválido", http.StatusBadRequest)
+		return
+	}
+
+	var status struct {
+		Status string `json:"status"`
+	}
+
+	err = json.NewDecoder(r.Body).Decode(&status)
+	if err != nil {
+		http.Error(w, "JSON inválido", http.StatusBadRequest)
+		return
+	}
+
+	// Actualizar el ranking, sumando 1 al valor actual
+	upvoted, err := db.Exec("UPDATE series SET status = ? WHERE id = ?", status.Status, id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Verificar cuántas filas fueron afectadas
+	rowsAffected, _ := upvoted.RowsAffected()
+	if rowsAffected == 0 {
+		http.Error(w, "Serie no encontrada", http.StatusNotFound)
+		return
+	}
+
+	// Responder con un código 204 (sin contenido)
+	w.WriteHeader(http.StatusNoContent)
+}
+
 func main() {
 	// Inicializar la base de datos
 	if err := initDB(); err != nil {
@@ -308,7 +346,7 @@ func main() {
 		r.Patch("/{id}/upvote", seriesupvote)
 		r.Patch("/{id}/downvote", seriesdownvote)
 		r.Patch("/{id}/episode", episodeplusone)
-		//r.Patch("/{id}/status", statuschange)
+		r.Patch("/{id}/status", statuschange)
 	})
 
 	// Mensaje de inicio
