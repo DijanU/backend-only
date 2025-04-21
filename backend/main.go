@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/go-chi/chi/v5"
 	_ "github.com/mattn/go-sqlite3"
@@ -104,7 +105,57 @@ func createSeries(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(newSeries)
 }
 
-func deleteseries() {}
+func deleteseries(w http.ResponseWriter, r *http.Request) {
+	idStr := chi.URLParam(r, "id")
+
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, "ID inválido", http.StatusBadRequest)
+		return
+	}
+
+	deleted, err := db.Exec("DELETE FROM series WHERE id = ?", id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	rowsAffected, _ := deleted.RowsAffected()
+	if rowsAffected == 0 {
+		http.Error(w, "Serie no encontrada", http.StatusNotFound)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func seriesupvote(w http.ResponseWriter, r *http.Request) {
+	idStr := chi.URLParam(r, "id")
+
+	// Convertir el ID de string a entero
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, "ID inválido", http.StatusBadRequest)
+		return
+	}
+
+	// Actualizar el ranking, sumando 1 al valor actual
+	upvoted, err := db.Exec("UPDATE series SET ranking = ranking + 1 WHERE id = ?", id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Verificar cuántas filas fueron afectadas
+	rowsAffected, _ := upvoted.RowsAffected()
+	if rowsAffected == 0 {
+		http.Error(w, "Serie no encontrada", http.StatusNotFound)
+		return
+	}
+
+	// Responder con un código 204 (sin contenido)
+	w.WriteHeader(http.StatusNoContent)
+}
 
 func main() {
 	// Inicializar la base de datos
@@ -119,7 +170,7 @@ func main() {
 	router.Use(func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Access-Control-Allow-Origin", "*")
-			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS")
 			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 
 			if r.Method == "OPTIONS" {
@@ -131,19 +182,19 @@ func main() {
 			fmt.Printf("Received %s request for %s\n", r.Method, r.URL.Path)
 			next.ServeHTTP(w, r)
 		})
-	}) // <--- ¡Aquí estaba faltando el paréntesis!
+	})
 
 	// Rutas API
-	router.Route("/api", func(r chi.Router) {
-		r.Get("/series", getallseries)
-		r.Post("/series", createSeries)
-		//router.Get("/series/:id", getseriesbyid)
-		//router.Put("/series/:id", updateseiers)
-		//router.Delete("/series/:id", deleteseries)
+	router.Route("/api/series", func(r chi.Router) {
+		r.Get("/", getallseries)
+		r.Post("/", createSeries)
+		//r.Get("/{id}", getseriesbyid)
+		//r.Put("/{id}", updateseiers)
+		r.Delete("/{id}", deleteseries)
 
-		//router.Patch("series/:id/upvote")
-		//router.Patch("series/:id/downvote")
-		//router.Patch("/series/:id/episode")
+		r.Patch("/{id}/upvote", seriesupvote)
+		//r.Patch("/{id}/downvote", seriesdownvote)
+		//r.Patch("/{id}/episode", )
 	})
 
 	// Mensaje de inicio
