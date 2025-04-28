@@ -1,0 +1,46 @@
+Series API - Instrucciones de Uso
+Descripción: Esta API permite gestionar una base de datos de series de TV. Puedes listar todas las series, consultar una serie específica por su ID y actualizar la información de una serie.
+
+Base URL:
+http://localhost:8080/api/series
+
+
+Endpoints disponibles:
+1. Obtener todas las series
+Método: GET
+URL: /series
+Descripción: Retorna todas las series almacenadas en la base de datos.
+Respuesta exitosa (200):
+Lista de objetos Series.
+
+2. Obtener una serie por ID
+Método: GET
+URL: /series/{id}
+Descripción: Retorna la información de una serie específica usando su ID.
+Parámetro requerido:
+id (entero): ID de la serie.
+Errores posibles:
+400: ID inválido.
+404: Serie no encontrada.
+
+3. Actualizar una serie
+Método: PUT
+URL: /series/{id}
+Descripción: Actualiza la información de una serie específica.
+Parámetros requeridos:
+id (entero): ID de la serie.
+body (JSON): Datos de la serie a actualizar.
+Errores posibles:
+400: ID o JSON inválido.
+404: Serie no encontrada.
+
+Base de Datos
+Se utiliza SQLite (series.db) para almacenar la información de las series.
+Al iniciar la aplicación, si la base de datos no existe, se crea automáticamente con la siguiente estructura:
+
+id: ID único de la serie (autoincremental).
+ranking: Ranking único de la serie.
+title: Título de la serie.
+status: Estado actual de la serie.
+lws_episodes: Último episodio visto.
+t_episodes: Total de episodios.
