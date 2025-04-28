@@ -25,7 +25,12 @@ http://localhost:8080/api/series/swagger/index.html
 
 ## 🧰 Requisitos
 
-El frontend de Dennis, ya que lo quite del repo porqeu mezclar el repo de frontend y backend es una muy mala practica.
+### El frontend de Dennis
+
+https://github.com/denn1s/series-tracker
+
+
+### Docker o Go local
 
 Tenés dos formas de correr el backend:
 
