@@ -18,6 +18,11 @@ Accedé a la colección de endpoints para probar el backend:
 
 ---
 
+## Swagger Link (after you run the main.go)
+http://localhost:8080/swagger/index.html
+
+---
+
 ## 🧰 Requisitos
 
 Tenés dos formas de correr el backend:

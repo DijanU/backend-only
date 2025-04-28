@@ -1,0 +1,245 @@
+basePath: /
+definitions:
+  main.Series:
+    properties:
+      id:
+        type: integer
+      lastEpisodeWatched:
+        type: integer
+      ranking:
+        type: integer
+      status:
+        type: string
+      title:
+        type: string
+      totalEpisodes:
+        type: integer
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: Esta API permite manejar información de series, incluyendo episodios
+    vistos, estatus, y votaciones.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: API de Series
+  version: "1.0"
+paths:
+  /series:
+    get:
+      description: Retorna una lista de todas las series guardadas en la base de datos
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/main.Series'
+            type: array
+      summary: Obtener todas las series
+      tags:
+      - series
+    post:
+      consumes:
+      - application/json
+      description: Crea una nueva serie con los datos enviados
+      parameters:
+      - description: Datos de la nueva serie
+        in: body
+        name: serie
+        required: true
+        schema:
+          $ref: '#/definitions/main.Series'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/main.Series'
+        "400":
+          description: Datos inválidos
+          schema:
+            type: string
+      summary: Crear una nueva serie
+      tags:
+      - series
+  /series/{id}:
+    delete:
+      description: Elimina una serie existente por su ID
+      parameters:
+      - description: ID de la serie
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: Sin contenido
+          schema:
+            type: string
+        "400":
+          description: ID inválido
+          schema:
+            type: string
+        "404":
+          description: Serie no encontrada
+          schema:
+            type: string
+      summary: Eliminar una serie
+      tags:
+      - series
+    get:
+      description: Retorna una serie específica por su ID
+      parameters:
+      - description: ID de la serie
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.Series'
+        "400":
+          description: ID inválido
+          schema:
+            type: string
+        "404":
+          description: Serie no encontrada
+          schema:
+            type: string
+      summary: Obtener una serie por ID
+      tags:
+      - series
+    put:
+      consumes:
+      - application/json
+      description: Actualiza la información de una serie existente
+      parameters:
+      - description: ID de la serie
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Datos actualizados
+        in: body
+        name: serie
+        required: true
+        schema:
+          $ref: '#/definitions/main.Series'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.Series'
+        "400":
+          description: ID o JSON inválido
+          schema:
+            type: string
+        "404":
+          description: Serie no encontrada
+          schema:
+            type: string
+      summary: Actualizar una serie
+      tags:
+      - series
+  /series/{id}/episodeplusone:
+    patch:
+      description: Incrementa en 1 el número de episodios vistos (`lws_episodes`)
+        de una serie específica
+      parameters:
+      - description: ID de la serie
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: Episodio sumado
+          schema:
+            type: string
+        "400":
+          description: ID inválido
+          schema:
+            type: string
+        "404":
+          description: Serie no encontrada
+          schema:
+            type: string
+        "500":
+          description: Error del servidor
+          schema:
+            type: string
+      summary: Sumar un episodio visto
+      tags:
+      - series
+  /series/{id}/status:
+    patch:
+      description: Actualiza el campo `status` de una serie con el valor enviado en
+        el cuerpo
+      parameters:
+      - description: ID de la serie
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 'Nuevo estado en formato JSON. Ej: {\'
+        in: body
+        name: status
+        required: true
+        schema:
+          type: object
+      responses:
+        "204":
+          description: Estado actualizado
+          schema:
+            type: string
+        "400":
+          description: ID inválido o JSON mal formado
+          schema:
+            type: string
+        "404":
+          description: Serie no encontrada
+          schema:
+            type: string
+        "500":
+          description: Error del servidor
+          schema:
+            type: string
+      summary: Cambiar estado de una serie
+      tags:
+      - series
+  /series/{id}/upvote:
+    post:
+      description: Disminuye el ranking de una serie específica
+      parameters:
+      - description: ID de la serie
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: Voto aplicado
+          schema:
+            type: string
+        "400":
+          description: ID inválido
+          schema:
+            type: string
+      summary: Votar por una serie (downvote)
+      tags:
+      - series
+swagger: "2.0"
