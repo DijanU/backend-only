@@ -25,6 +25,8 @@ http://localhost:8080/api/series/swagger/index.html
 
 ## 🧰 Requisitos
 
+El frontend de Dennis, ya que lo quite del repo porqeu mezclar el repo de frontend y backend es una muy mala practica.
+
 Tenés dos formas de correr el backend:
 
 ### Opción 1: Usando Docker
